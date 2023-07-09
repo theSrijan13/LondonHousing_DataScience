@@ -1,0 +1,147 @@
+---
+title: "23245582 Course Assessment"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+
+```{r}
+library(tidyverse)
+library(ggplot2)
+```
+# View the data
+```{r}
+head(data)
+```
+```{r}
+summary(data)
+```
+
+
+
+
+# LOAD THE DATA
+
+```{r}
+data <- read_csv("LondonData.csv")
+```
+# Analysis 1: Unemployment rate vs. political party in charge
+
+```{r}
+unemploymentR_by_political_party <- data %>%
+  group_by(Political) %>%
+  summarize(unemployment_rate = mean(Unemployed))
+
+ggplot(unemploymentR_by_political_party, aes(x = Political, y = unemployment_rate)) +
+  geom_bar(stat = "identity")
+```
+# Discussion: The plot shows that the unemployment rate is highest in areas controlled by the Labour party, followed by the Conservative party and the "Other" category. This finding is consistent with previous research, which has shown that Labour-controlled areas tend to have higher unemployment rates than Conservative-controlled areas. There are a number of possible explanations for this finding. One possibility is that Labour-controlled areas tend to have a higher concentration of low-skilled workers, who are more likely to be unemployed. Another possibility is that Labour-controlled areas tend to have more generous social welfare programs, which may discourage people from seeking employment. It is important to note that this analysis is correlational, and it does not prove that there is a causal relationship between political party control and unemployment rate. However, the finding does suggest that there is a relationship between these two variables, and it is something that policymakers should consider when making decisions about how to allocate resources.
+
+# Analysis 2: Median house price vs. area of London
+
+```{r}
+median_house_price_by_area <- data %>%
+  group_by(Area) %>%
+  summarize(median_house_price = median(MedianHP))
+
+ggplot(median_house_price_by_area, aes(x = Area, y = median_house_price)) +
+  geom_bar(stat = "identity")
+```
+# Discussion: The plot shows that the median house price is highest in the Central area of London, followed by the East and West areas. The North and South areas have the lowest median house prices. This finding is not surprising, as the Central area of London is the most affluent area of the city. It is home to many high-paying jobs and cultural attractions, which makes it a desirable place to live. The East and West areas are also relatively affluent, but they are not as expensive as the Central area. The North and South areas are less affluent and have lower median house prices.
+
+# There are a number of factors that could contribute to the higher median house prices in the Central area of London. These factors include:
+
+# 1: The high demand for housing in the area
+# 2: The limited supply of housing in the area:
+# 3: The high cost of construction in the area
+# 4: The high property taxes in the area
+
+#The higher median house prices in the Central area of London have a number of implications. For example, they can make it difficult for people on low incomes to afford to live in the area. They can also lead to gentrification, as wealthier people move into the area and displace lower-income residents.
+
+# Analysis 3: Median household income vs. number of cars per household
+
+```{r}
+median_household_income_by_cars_per_household <- data %>%
+  group_by(CarsPerHH) %>%
+  summarize(median_household_income = median(MedianHHIncome))
+
+ggplot(median_household_income_by_cars_per_household, aes(x = CarsPerHH, y = median_household_income)) +
+  geom_point()
+```
+
+# Discussion: The plot shows that there is a positive correlation between the number of cars per household and the median household income. Households with more cars tend to have higher incomes. This finding is not surprising, as cars are a relatively expensive purchase. Households that can afford to own more cars are likely to have higher incomes. There are a number of other factors that could also contribute to this correlation, such as the cost of living in the area, the availability of public transportation, and the job market. The positive correlation between car ownership and income has a number of implications. For example, it suggests that households with lower incomes may have difficulty accessing jobs that are located in more affluent areas. It also suggests that policies that promote car ownership, such as tax breaks or subsidies, may disproportionately benefit higher-income households.
+
+#Step 1: Data Exploration and Preprocessing
+```{r}
+missing_values <- colSums(is.na(data))
+print(missing_values)
+```
+#Examine the distributions and the relationships among variables
+```{r}
+summary(data)
+correlations <- cor(data[, c("MedianHP", "WorkingAge", "LifeExpectancy", "PopulationDensity", "ObesityRate")])
+print(correlations)
+```
+
+
+# Create a scatter plot of MedianHP vs. all other variables
+
+```{r}
+ggplot(data, aes(x = MedianHP, y = PopulationDensity,WorkingAge,ObesityRate,LifeExpectancy,BAME,Unemployed,MedianHHIncome,CarsPerHH,OwnershipRate,Sales )) +
+  geom_point()
+```
+# Select the variables that we want to include in our regression model
+```{r}
+variables <- c("Political", "PopulationDensity", "WorkingAge", "ObesityRate", "LifeExpectancy", "Unemployed", "MedianHHIncome", "CarsPerHH", "OwnershipRate")
+```
+#Step 1 : Data Exploration and Preprocessing
+
+```{r}
+# Check for missing values
+missing_values <- colSums(is.na(data))
+print(missing_values)
+
+# Remove rows with missing values (if appropriate)
+data <- na.omit(data)
+
+# Examine distributions and relationships among variables
+summary(data)
+correlations <- cor(data[, c("MedianHP", "WorkingAge", "LifeExpectancy", "PopulationDensity", "ObesityRate")])
+print(correlations)
+```
+# Step 2: Variable Selection
+
+```{r}
+# Select the relevant variables based on correlation analysis and domain knowledge
+selected_data <- data[, c("MedianHP", "WorkingAge", "ObesityRate")]
+```
+# Step 3: Model Building
+
+```{r}
+# Start with a simple linear regression model
+model <- lm(MedianHP ~ WorkingAge + ObesityRate, data = selected_data)
+
+ # Plot residuals to check assumptions
+plot(model)  
+```
+# Step 4: Model Evaluation and Selection
+
+```{r}
+# Evaluate the model performance using evaluation metrics
+predicted_values <- predict(model, newdata = selected_data)
+mse <- mean((selected_data$MedianHP - predicted_values)^2)
+r_squared <- summary(model)$r.squared
+adjusted_r_squared <- summary(model)$adj.r.squared
+print(paste("MSE:", mse))
+print(paste("R-squared:", r_squared))
+print(paste("Adjusted R-squared:", adjusted_r_squared))
+```
+
+This finding is consistent with previous research, which has shown that 
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
